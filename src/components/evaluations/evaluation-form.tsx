@@ -56,7 +56,8 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
     resident_id: '',
     faculty_id: '',
     epa_id: '',
-    complexity: '' as any,
+    resident_complexity: '' as any,
+    faculty_complexity: '' as any,
     resident_entrustment_level: '' as any,
     faculty_entrustment_level: '' as any,
     resident_comment: '',
@@ -97,7 +98,8 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
         resident_id: evaluation.resident_id,
         faculty_id: evaluation.faculty_id,
         epa_id: evaluation.epa_id,
-        complexity: evaluation.complexity,
+        resident_complexity: evaluation.resident_complexity,
+        faculty_complexity: evaluation.faculty_complexity,
         resident_entrustment_level: evaluation.resident_entrustment_level || '',
         faculty_entrustment_level: evaluation.faculty_entrustment_level || '',
         resident_comment: evaluation.resident_comment || '',
@@ -237,9 +239,28 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
         toast.error('Please select an EPA')
         return
       }
-      if (!formData.complexity) {
-        toast.error('Please select case complexity')
-        return
+      
+      // Validate complexity based on who should be providing it
+      if (mode === 'create') {
+        // When creating, validate based on who is creating
+        if (isCurrentUserResident && !formData.resident_complexity) {
+          toast.error('Please select your complexity assessment')
+          return
+        }
+        if (isCurrentUserFaculty && !formData.faculty_complexity) {
+          toast.error('Please select your complexity assessment')
+          return
+        }
+      } else if (mode === 'respond') {
+        // When responding, validate the appropriate complexity field
+        if (isRespondingAsResident && !formData.resident_complexity) {
+          toast.error('Please select your complexity assessment')
+          return
+        }
+        if (isRespondingAsFaculty && !formData.faculty_complexity) {
+          toast.error('Please select your complexity assessment')
+          return
+        }
       }
       if (!currentUser?.institution_id) {
         toast.error('Institution information is missing')
@@ -250,10 +271,15 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
     const dataToSave = {
       ...formData,
       // Convert empty strings to null for enum fields to avoid database validation errors
-      complexity: formData.complexity || null,
+      resident_complexity: formData.resident_complexity || null,
+      faculty_complexity: formData.faculty_complexity || null,
       resident_entrustment_level: formData.resident_entrustment_level || null,
       faculty_entrustment_level: formData.faculty_entrustment_level || null,
-      // Only set completion timestamps when responding to existing evaluations, not when creating new ones
+      // Set completion timestamps appropriately
+      // When creating: creator completes their part
+      // When responding: responder completes their part  
+      ...(mode === 'create' && currentUser?.role === 'resident' && { resident_completed_at: new Date().toISOString() }),
+      ...(mode === 'create' && currentUser?.role === 'faculty' && { faculty_completed_at: new Date().toISOString() }),
       ...(mode === 'respond' && currentUser?.role === 'resident' && { resident_completed_at: new Date().toISOString() }),
       ...(mode === 'respond' && currentUser?.role === 'faculty' && { faculty_completed_at: new Date().toISOString() }),
       // Don't set is_completed - it's a generated column in the database
@@ -273,7 +299,8 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
   const canEdit = mode === 'create' || mode === 'respond'
 
   const canProceedFromStep1 = formData.epa_id || (formData.custom_case_text && mappedEPA)
-  const canProceedFromStep2 = formData.faculty_id && formData.complexity && 
+  const canProceedFromStep2 = formData.faculty_id && 
+    ((isCurrentUserResident && formData.resident_complexity) || (isCurrentUserFaculty && formData.faculty_complexity)) &&
     ((isCurrentUserResident && formData.resident_entrustment_level) || (isCurrentUserFaculty && formData.faculty_entrustment_level))
 
   const getStepTitle = () => {
@@ -519,19 +546,143 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
                   <CardTitle className="text-xl">Case Complexity</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="grid grid-cols-3 gap-4">
-                    {COMPLEXITY_LEVELS.map((level) => (
+                  <div className="space-y-4">
+                    {/* Show complexity assessment for current user only */}
+                    {(mode === 'create' || mode === 'respond') && (
+                      <div className="flex flex-col gap-2">
+                        <h4 className="text-sm font-medium text-muted-foreground">Your Complexity Assessment</h4>
+                        <div className="grid grid-cols-3 gap-2">
+                          {COMPLEXITY_LEVELS.map((level) => (
+                            <Button
+                              key={level.value}
+                              type="button"
+                              variant={
+                                ((isCurrentUserResident || isRespondingAsResident) && formData.resident_complexity === level.value) ||
+                                ((isCurrentUserFaculty || isRespondingAsFaculty) && formData.faculty_complexity === level.value)
+                                  ? "default" : "outline"
+                              }
+                              size="lg"
+                              onClick={() => {
+                                if (isCurrentUserResident || isRespondingAsResident) {
+                                  setFormData(prev => ({ ...prev, resident_complexity: level.value as any }))
+                                } else if (isCurrentUserFaculty || isRespondingAsFaculty) {
+                                  setFormData(prev => ({ ...prev, faculty_complexity: level.value as any }))
+                                }
+                              }}
+                              className="h-16"
+                            >
+                              {level.label}
+                            </Button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* In view mode, show both assessments if available */}
+                    {mode === 'view' && evaluation?.is_completed && (
+                      <div className="grid grid-cols-2 gap-4">
+                        {evaluation.resident_complexity && (
+                          <div className="flex flex-col gap-2">
+                            <h4 className="text-sm font-medium text-muted-foreground">Resident Assessment</h4>
+                            <Badge className="justify-center py-2">
+                              {COMPLEXITY_LEVELS.find(l => l.value === evaluation.resident_complexity)?.label}
+                            </Badge>
+                          </div>
+                        )}
+                        {evaluation.faculty_complexity && (
+                          <div className="flex flex-col gap-2">
+                            <h4 className="text-sm font-medium text-muted-foreground">Faculty Assessment</h4>
+                            <Badge className="justify-center py-2">
+                              {COMPLEXITY_LEVELS.find(l => l.value === evaluation.faculty_complexity)?.label}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Entrustment Assessment */}
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle className="text-xl">
+                    {isCurrentUserResident ? 'Your Self-Assessment' : 'Faculty Assessment'}
+                  </CardTitle>
+                  <p className="text-muted-foreground">
+                    {isCurrentUserResident 
+                      ? 'How much supervision do you think you needed?' 
+                      : 'How much supervision did you provide?'}
+                  </p>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex flex-col gap-4">
+                    {ENTRUSTMENT_LEVELS.map((level) => (
                       <Button
                         key={level.value}
                         type="button"
-                        variant={formData.complexity === level.value ? "default" : "outline"}
+                        variant={
+                          (isCurrentUserResident && formData.resident_entrustment_level === level.value) ||
+                          (isCurrentUserFaculty && formData.faculty_entrustment_level === level.value)
+                            ? "default" : "outline"
+                        }
                         size="lg"
-                        onClick={() => setFormData(prev => ({ ...prev, complexity: level.value as any }))}
-                        className="h-16"
+                        onClick={() => {
+                          if (isCurrentUserResident) {
+                            setFormData(prev => ({ ...prev, resident_entrustment_level: level.value as any }))
+                          } else {
+                            setFormData(prev => ({ ...prev, faculty_entrustment_level: level.value as any }))
+                          }
+                        }}
+                        className="h-auto p-4 text-left flex-col items-start"
                       >
-                        {level.label}
+                        <div className="font-medium">{level.label}</div>
+                        <div className="text-sm opacity-70 mt-1">{level.description}</div>
                       </Button>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Respond mode: Show complexity, entrustment */}
+          {mode === 'respond' && (
+            <div className="space-y-6">
+              {/* Case Complexity */}
+              <Card className="border-2">
+                <CardHeader>
+                  <CardTitle className="text-xl">Case Complexity</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div className="flex flex-col gap-2">
+                      <h4 className="text-sm font-medium text-muted-foreground">Your Complexity Assessment</h4>
+                      <div className="grid grid-cols-3 gap-2">
+                        {COMPLEXITY_LEVELS.map((level) => (
+                          <Button
+                            key={level.value}
+                            type="button"
+                            variant={
+                              ((isCurrentUserResident || isRespondingAsResident) && formData.resident_complexity === level.value) ||
+                              ((isCurrentUserFaculty || isRespondingAsFaculty) && formData.faculty_complexity === level.value)
+                                ? "default" : "outline"
+                            }
+                            size="lg"
+                            onClick={() => {
+                              if (isCurrentUserResident || isRespondingAsResident) {
+                                setFormData(prev => ({ ...prev, resident_complexity: level.value as any }))
+                              } else if (isCurrentUserFaculty || isRespondingAsFaculty) {
+                                setFormData(prev => ({ ...prev, faculty_complexity: level.value as any }))
+                              }
+                            }}
+                            className="h-16"
+                          >
+                            {level.label}
+                          </Button>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
@@ -580,7 +731,7 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
           )}
 
           {/* Step 3: Reflection */}
-          {(currentStep === 3 || mode === 'respond' || mode === 'view') && (
+          {(currentStep === 3 || mode === 'view') && (
             <Card className="border-2">
               <CardHeader>
                 <CardTitle className="text-xl">
@@ -615,17 +766,6 @@ export function EvaluationForm({ open, onOpenChange, evaluation, mode }: Evaluat
                     rows={8}
                     className="text-base"
                   />
-                )}
-
-                {/* Hidden feedback message */}
-                {mode === 'view' && !evaluation?.is_completed && (
-                  <div className="p-6 bg-muted rounded-lg border text-center">
-                    <p className="text-base text-muted-foreground">
-                      {isCurrentUserResident 
-                        ? "Faculty feedback will be visible once the evaluation is complete."
-                        : "Resident reflection will be visible once the evaluation is complete."}
-                    </p>
-                  </div>
                 )}
               </CardContent>
             </Card>

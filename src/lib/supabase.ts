@@ -46,7 +46,8 @@ export interface Evaluation {
   faculty_id: string
   epa_id: string
   domains: DomainType[]
-  complexity: ComplexityLevel
+  resident_complexity?: ComplexityLevel
+  faculty_complexity?: ComplexityLevel
   resident_entrustment_level?: EntrustmentLevel
   faculty_entrustment_level?: EntrustmentLevel
   resident_comment?: string

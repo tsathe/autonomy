@@ -6,6 +6,7 @@ import { getCurrentUserProfile, type UserProfile } from '@/lib/supabase'
 import { ResidentDashboard } from '@/components/dashboard/resident-dashboard'
 import { FacultyDashboard } from '@/components/dashboard/faculty-dashboard'
 import { AdminDashboard } from '@/components/dashboard/admin-dashboard'
+import ModeToggle from '@/components/mode-toggle'
 import { Toaster } from 'sonner'
 
 export default function DashboardPage() {
@@ -59,9 +60,13 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background relative">
       {renderDashboard()}
       <Toaster />
+      {/* Theme Toggle - Fixed Bottom Right */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ModeToggle />
+      </div>
     </div>
   )
 }

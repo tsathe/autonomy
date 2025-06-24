@@ -96,14 +96,14 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
         <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
           {!isCollapsed ? (
             <div>
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent font-inter">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent font-inter">
                 Autonomy
               </h2>
               <p className="text-sm text-muted-foreground">Resident Portal</p>
             </div>
           ) : (
             <div className="flex items-center justify-center w-full">
-              <h2 className="text-2xl font-bold bg-gradient-to-r from-white to-gray-400 bg-clip-text text-transparent font-inter">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent font-inter">
                 A.
               </h2>
             </div>
@@ -192,6 +192,11 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
                     <div className="flex-1 text-left min-w-0">
                       <div className="font-medium truncate">
                         {currentUser.first_name} {currentUser.last_name}
+                        {currentUser.pgy_year && (
+                          <span className="ml-2 text-xs text-muted-foreground font-normal">
+                            PGY-{currentUser.pgy_year}
+                          </span>
+                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={cn("text-xs", getRoleColor(currentUser.role))}>
