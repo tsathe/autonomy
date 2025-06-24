@@ -240,3 +240,50 @@ export function exportToCSV(data: any[], filename: string) {
     document.body.removeChild(link)
   }
 }
+
+// Get evaluations by EPA for analytics
+export async function getEvaluationsByEPA(epa_id: string, resident_id?: string): Promise<Evaluation[]> {
+  const query = supabase
+    .from('evaluations')
+    .select(`
+      *,
+      resident:profiles!resident_id (
+        id,
+        first_name,
+        last_name,
+        avatar_url,
+        role,
+        institution_id
+      ),
+      faculty:profiles!faculty_id (
+        id,
+        first_name,
+        last_name,
+        avatar_url,
+        role,
+        institution_id
+      ),
+      epa:epas (
+        id,
+        title,
+        description,
+        number
+      )
+    `)
+    .eq('epa_id', epa_id)
+    .eq('is_completed', true)
+    .order('created_at', { ascending: true })
+
+  if (resident_id) {
+    query.eq('resident_id', resident_id)
+  }
+
+  const { data, error } = await query
+
+  if (error) {
+    console.error('Error fetching evaluations by EPA:', error)
+    throw error
+  }
+
+  return data || []
+}

@@ -4,6 +4,7 @@ import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { getEvaluations, getCurrentUserProfile } from '@/lib/supabase'
 import { EvaluationForm } from '@/components/evaluations/evaluation-form'
+import { EvaluationView } from '@/components/evaluations/evaluation-view'
 import { Sidebar } from '@/components/layout/sidebar'
 import { FeedSection } from '@/components/dashboard/feed-section'
 import { InboxSection } from '@/components/dashboard/inbox-section'
@@ -21,6 +22,7 @@ import { format } from 'date-fns'
 
 export function ResidentDashboard() {
   const [showEvaluationForm, setShowEvaluationForm] = useState(false)
+  const [showEvaluationView, setShowEvaluationView] = useState(false)
   const [selectedEvaluation, setSelectedEvaluation] = useState<any>(null)
   const [formMode, setFormMode] = useState<'create' | 'respond' | 'view'>('create')
   const [activeSection, setActiveSection] = useState('feed')
@@ -90,8 +92,7 @@ export function ResidentDashboard() {
 
   const handleViewEvaluation = (evaluation: any) => {
     setSelectedEvaluation(evaluation)
-    setFormMode('view')
-    setShowEvaluationForm(true)
+    setShowEvaluationView(true)
   }
 
   const handleExportData = () => {
@@ -182,6 +183,13 @@ export function ResidentDashboard() {
         onOpenChange={setShowEvaluationForm}
         evaluation={selectedEvaluation}
         mode={formMode}
+      />
+
+      {/* Evaluation View Modal */}
+      <EvaluationView
+        open={showEvaluationView}
+        onOpenChange={setShowEvaluationView}
+        evaluation={selectedEvaluation}
       />
     </div>
   )
