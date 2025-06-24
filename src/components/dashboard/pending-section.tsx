@@ -1,134 +1,156 @@
 'use client'
 
-import { Button } from '@/components/ui/button'
+import { Card, CardContent } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { FilterBar } from './filter-bar'
+import { formatEntrustmentLevel, formatComplexityLevel, formatDomain, getEntrustmentLevelColor, getComplexityLevelColor, getAvatarUrl } from '@/lib/utils'
+import { Clock, UserCheck, Settings, Send, Eye, Users, Calendar } from 'lucide-react'
 import { format } from 'date-fns'
-import { Clock, Eye, Users, Calendar } from 'lucide-react'
+import { useState } from 'react'
+import type { Evaluation, DomainType } from '@/lib/supabase'
+import { exportEvaluationsToCSV } from '@/lib/csv-export'
 
 interface PendingSectionProps {
-  evaluations: any[]
-  onViewEvaluation: (evaluation: any) => void
+  evaluations: Evaluation[]
+  onViewEvaluation: (evaluation: Evaluation) => void
 }
 
 export function PendingSection({ evaluations, onViewEvaluation }: PendingSectionProps) {
-  const getAvatarUrl = (userId?: string, style: string = 'avataaars') => {
-    if (!userId) return ''
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${userId}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`
-  }
+  const [dateFilter, setDateFilter] = useState<string | null>(null)
+  const [facultyFilter, setFacultyFilter] = useState<string | null>(null)
+  const [epaFilter, setEpaFilter] = useState<string | null>(null)
+  const [sortAsc, setSortAsc] = useState(false)
+
+  const uniqueFaculty = Array.from(new Map(
+    evaluations.map(e => [e.faculty?.id, e.faculty])
+  ).values()).filter(Boolean)
+  const uniqueEpas = Array.from(new Set(evaluations.map(e => e.epa?.code).filter(Boolean))) as string[]
+
+  let filtered = evaluations
+  if (dateFilter) filtered = filtered.filter(e => e.created_at.startsWith(dateFilter))
+  if (facultyFilter) filtered = filtered.filter(e => e.faculty?.id === facultyFilter)
+  if (epaFilter) filtered = filtered.filter(e => e.epa?.code === epaFilter)
+  const sorted = [...filtered].sort((a,b)=> sortAsc ? new Date(a.created_at).getTime()-new Date(b.created_at).getTime() : new Date(b.created_at).getTime()-new Date(a.created_at).getTime())
 
   if (evaluations.length === 0) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h2 className="text-2xl font-bold tracking-tight">Pending</h2>
-          <p className="text-muted-foreground">Evaluations sent to faculty awaiting response</p>
-        </div>
-        
-        <div className="text-center py-12">
-          <div className="mx-auto mb-4 h-12 w-12 rounded-full bg-muted flex items-center justify-center">
-            <Users className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <h3 className="text-xl font-semibold mb-2">No pending evaluations</h3>
-          <p className="text-muted-foreground">Evaluations you send to faculty will appear here</p>
+      <div className="text-center py-12">
+        <div className="text-muted-foreground">
+          <Send className="h-12 w-12 mx-auto mb-4 opacity-50" />
+          <p className="text-lg font-medium">No pending evaluations</p>
+          <p className="text-sm">Evaluations you've sent will appear here</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Pending</h2>
-        <p className="text-muted-foreground">{evaluations.length} evaluation{evaluations.length !== 1 ? 's' : ''} waiting for faculty response</p>
+    <>
+      <div className="flex flex-col mb-4 gap-1">
+        <h2 className="text-2xl font-bold mb-2">Pending</h2>
+        <FilterBar
+          dateFilter={dateFilter}
+          setDateFilter={setDateFilter}
+          facultyFilter={facultyFilter}
+          setFacultyFilter={setFacultyFilter}
+          epaFilter={epaFilter}
+          setEpaFilter={setEpaFilter}
+          sortAsc={sortAsc}
+          toggleSort={() => setSortAsc(!sortAsc)}
+          uniqueFaculty={uniqueFaculty as any}
+          uniqueEpas={uniqueEpas}
+          onExport={() => exportEvaluationsToCSV(sorted, 'pending-evaluations.csv')}
+        />
       </div>
-      
-      <div className="divide-y divide-border">
-        {evaluations.map((evaluation) => (
+      <div className="space-y-0">
+        {sorted.map((evaluation) => (
           <div 
-            key={evaluation.id} 
-            className="py-6 px-4 -mx-4 hover:bg-muted/30 transition-colors rounded-lg cursor-pointer group"
+            key={evaluation.id}
+            className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors duration-200 cursor-pointer"
             onClick={() => onViewEvaluation(evaluation)}
           >
-            {/* Header with Avatar and Time Info */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center gap-4 flex-1 min-w-0 mr-6">
-                {/* Faculty Avatar */}
-                <Avatar className="h-10 w-10 border-2 border-background flex-shrink-0">
-                  <AvatarImage 
-                    src={getAvatarUrl(evaluation.faculty?.id)} 
-                    alt={`${evaluation.faculty?.first_name} ${evaluation.faculty?.last_name}`}
-                  />
-                  <AvatarFallback className="bg-blue-500 text-white text-sm">
-                    {evaluation.faculty?.first_name?.[0]}{evaluation.faculty?.last_name?.[0]}
-                  </AvatarFallback>
-                </Avatar>
-                
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm text-muted-foreground">Sent to</span>
-                    <span className="font-medium">
-                      {evaluation.faculty?.first_name} {evaluation.faculty?.last_name}
-                    </span>
+            <div className="p-6">
+              {/* Header with overlapping avatars */}
+              <div className="flex items-start justify-between mb-4">
+                <div className="flex items-center space-x-3">
+                  {/* Overlapping Avatars */}
+                  <div className="flex -space-x-2">
+                    <Avatar className="h-10 w-10 border-2 border-background relative z-10">
+                      <AvatarImage 
+                        src={getAvatarUrl(evaluation.resident?.id)} 
+                        alt={`${evaluation.resident?.first_name} ${evaluation.resident?.last_name}`}
+                      />
+                      <AvatarFallback className="text-sm">
+                        {evaluation.resident?.first_name?.[0]}{evaluation.resident?.last_name?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                    <Avatar className="h-10 w-10 border-2 border-background relative z-0">
+                      <AvatarImage 
+                        src={getAvatarUrl(evaluation.faculty?.id)} 
+                        alt={`${evaluation.faculty?.first_name} ${evaluation.faculty?.last_name}`}
+                      />
+                      <AvatarFallback className="text-sm">
+                        {evaluation.faculty?.first_name?.[0]}{evaluation.faculty?.last_name?.[0]}
+                      </AvatarFallback>
+                    </Avatar>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Calendar className="h-3 w-3" />
-                    {format(new Date(evaluation.created_at), 'MMM dd, yyyy')} • 
-                    {Math.ceil((new Date().getTime() - new Date(evaluation.created_at).getTime()) / (1000 * 60 * 60 * 24))} days ago
+                  
+                  <div className="min-w-0">
+                    <div className="flex items-center space-x-2">
+                      <span className="font-semibold text-foreground">
+                        {evaluation.resident?.first_name} {evaluation.resident?.last_name}
+                      </span>
+                      <span className="text-muted-foreground">•</span>
+                      <span className="text-muted-foreground">
+                        Dr. {evaluation.faculty?.last_name}
+                      </span>
+                    </div>
+                    <div className="text-sm text-muted-foreground mt-1 flex items-center space-x-1">
+                      <Clock className="h-3 w-3" />
+                      <span>Sent {format(new Date(evaluation.created_at), 'MMM dd, yyyy')}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              
-              {/* Right Side: Status Badge and Action Button */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <Badge variant="secondary" className="gap-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
-                  <Clock className="h-3 w-3" />
-                  Awaiting Faculty
-                </Badge>
-                
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  onClick={(e) => {
-                    e.stopPropagation()
-                    onViewEvaluation(evaluation)
-                  }}
-                  className="opacity-0 group-hover:opacity-100 transition-opacity"
-                >
-                  <Eye className="h-4 w-4" />
-                </Button>
-              </div>
-            </div>
 
-            {/* Case Info */}
-            <div className="mb-3 ml-16">
-              <div className="flex items-center gap-2 mb-1">
-                <Badge variant="outline" className="font-medium">
-                  {evaluation.epa?.code}
-                </Badge>
-                <span className="font-semibold">
-                  {evaluation.custom_case_text || evaluation.epa?.title}
-                </span>
+                {/* Status indicator */}
+                <div className="flex items-center space-x-2 flex-shrink-0">
+                  <Badge className="gap-1 bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
+                    <Clock className="h-3 w-3" />
+                    Awaiting Response
+                  </Badge>
+                </div>
               </div>
-            </div>
 
-            {/* Your Note */}
-            {evaluation.resident_comment && (
-              <div className="ml-16 mr-16">
-                <div className="bg-muted/20 rounded-lg p-3 border-0">
-                  <div className="flex items-center gap-2 mb-2">
-                    <div className="h-2 w-2 rounded-full bg-blue-500"></div>
-                    <p className="text-xs font-medium text-muted-foreground uppercase tracking-wide">Your Note</p>
-                  </div>
-                  <p className="text-sm leading-relaxed text-foreground">
-                    {evaluation.resident_comment}
+              {/* EPA Information */}
+              <div className="mb-3">
+                <div className="flex items-center space-x-2 mb-2">
+                  <Badge variant="outline" className="font-mono text-xs">
+                    {evaluation.epa?.code}
+                  </Badge>
+                  <span className="font-medium text-foreground">
+                    {evaluation.epa?.title}
+                  </span>
+                </div>
+                {evaluation.custom_case_text && (
+                  <p className="text-sm text-muted-foreground mt-1">
+                    {evaluation.custom_case_text}
                   </p>
-                </div>
+                )}
               </div>
-            )}
+
+              {/* Domains */}
+              <div className="flex flex-wrap gap-1 mt-3">
+                {evaluation.domains?.map((domain: DomainType) => (
+                  <Badge key={domain} variant="secondary" className="text-xs">
+                    {formatDomain(domain)}
+                  </Badge>
+                ))}
+              </div>
+            </div>
           </div>
         ))}
       </div>
-    </div>
+    </>
   )
 }

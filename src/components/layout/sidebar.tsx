@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { getCurrentUserProfile, supabase, type UserProfile } from '@/lib/supabase'
-import { cn } from '@/lib/utils'
+import { cn, getAvatarUrl } from '@/lib/utils'
 import { 
   Menu, 
   X, 
@@ -68,12 +68,6 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
       case 'resident': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
       default: return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-200'
     }
-  }
-
-  // Generate AI avatar URL using DiceBear Avatars
-  const getAvatarUrl = (userId?: string, style: string = 'avataaars') => {
-    if (!userId) return ''
-    return `https://api.dicebear.com/7.x/${style}/svg?seed=${userId}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`
   }
 
   return (

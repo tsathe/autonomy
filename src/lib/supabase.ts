@@ -107,8 +107,8 @@ export const getEvaluations = async (filters?: {
     .from('evaluations')
     .select(`
       *,
-      resident:user_profiles!resident_id(first_name, last_name, pgy_year),
-      faculty:user_profiles!faculty_id(first_name, last_name),
+      resident:user_profiles!resident_id(id, first_name, last_name, pgy_year),
+      faculty:user_profiles!faculty_id(id, first_name, last_name),
       epa:epas(code, title)
     `)
     .order('created_at', { ascending: false })

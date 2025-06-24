@@ -227,7 +227,7 @@ export function ResidentDashboard() {
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
+    <div className="flex h-screen bg-background overflow-hidden">
       <Sidebar
         items={sidebarItems}
         activeSection={activeSection}
@@ -235,8 +235,8 @@ export function ResidentDashboard() {
         onNewEvaluation={handleNewEvaluation}
       />
       
-      <main className="flex-1 overflow-auto">
-        <div className="container mx-auto p-6 lg:pl-8">
+      <main className="flex-1 overflow-y-auto">
+        <div className="container mx-auto p-6 max-w-4xl">
           {renderContent()}
         </div>
       </main>
