@@ -13,6 +13,7 @@ import { Home, Inbox, Clock, BarChart3 } from 'lucide-react'
 // Analytics components (keeping the existing analytics)
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { formatEntrustmentLevel, formatComplexityLevel, formatDomain, exportToCSV } from '@/lib/utils'
+import { AnalyticsDashboard } from '@/components/analytics/analytics-dashboard'
 import { Button } from '@/components/ui/button'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar } from 'recharts'
 import { Download } from 'lucide-react'
@@ -137,74 +138,8 @@ export function ResidentDashboard() {
 
   // Analytics component
   const AnalyticsSection = () => (
-    <div className="space-y-6">
-      <div>
-        <h2 className="text-2xl font-bold tracking-tight">Analytics</h2>
-        <p className="text-muted-foreground">Insights from your completed evaluations</p>
-      </div>
-
-      <div className="flex justify-end">
-        <Button onClick={handleExportData} variant="outline">
-          <Download className="h-4 w-4 mr-2" />
-          Export Data
-        </Button>
-      </div>
-
-      {completedEvaluations.length === 0 ? (
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-center py-8 text-muted-foreground">
-              <BarChart3 className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="text-lg font-medium">No data to analyze yet</p>
-              <p className="text-sm">Complete some evaluations to see analytics</p>
-            </div>
-          </CardContent>
-        </Card>
-      ) : (
-        <div className="grid gap-6 md:grid-cols-2">
-          {/* Entrustment Trends */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Entrustment Progress</CardTitle>
-              <CardDescription>Your progression over time</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={entrustmentTrends}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis domain={[1, 4]} />
-                  <Tooltip />
-                  <Line type="monotone" dataKey="resident" stroke="#8884d8" name="Self-Assessment" />
-                  <Line type="monotone" dataKey="faculty" stroke="#82ca9d" name="Faculty Assessment" />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Complexity Distribution */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Case Complexity</CardTitle>
-              <CardDescription>Distribution by complexity level</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <BarChart data={complexityChartData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="complexity" />
-                  <YAxis />
-                  <Tooltip />
-                  <Bar dataKey="count" fill="#8884d8" />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
-      )}
-    </div>
+    <AnalyticsDashboard user={currentUser!} />
   )
-
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useQuery } from '@tanstack/react-query'
 import { getCurrentUserProfile } from '@/lib/supabase'
 import { Navigation } from '@/components/layout/navigation'
-import { AdminDashboard } from '@/components/dashboard/admin-dashboard'
+import { AnalyticsDashboard } from '@/components/analytics/analytics-dashboard'
 import { Toaster } from 'sonner'
 
 export default function AnalyticsPage() {
@@ -18,7 +18,7 @@ export default function AnalyticsPage() {
   })
 
   useEffect(() => {
-    if (!isLoading && currentUser && currentUser.role !== 'admin') {
+    if (!isLoading && !currentUser) {
       router.push('/dashboard')
     }
   }, [currentUser, isLoading, router])
@@ -31,15 +31,15 @@ export default function AnalyticsPage() {
     )
   }
 
-  if (!currentUser || currentUser.role !== 'admin') {
+  if (!currentUser) {
     return null
   }
 
   return (
     <div className="min-h-screen bg-background">
       <Navigation />
-      <main className="container mx-auto py-6">
-        <AdminDashboard />
+      <main className="py-6 px-4">
+        <AnalyticsDashboard user={currentUser} />
       </main>
       <Toaster />
     </div>
