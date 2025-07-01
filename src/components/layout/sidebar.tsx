@@ -61,7 +61,7 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
 
   const handleSignOut = async () => {
     await supabase.auth.signOut()
-    router.push('/auth')
+    router.push('/')
   }
 
   const handleAvatarChange = (newAvatarUrl: string) => {

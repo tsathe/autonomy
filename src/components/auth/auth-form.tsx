@@ -114,8 +114,8 @@ export default function AuthForm() {
         {/* Autonomy Branding */}
         <div className="text-center space-y-4 animate-in fade-in duration-700">
           <div className="flex items-center justify-center">
-            <div className="bg-gradient-to-r from-white via-gray-50 to-gray-100 text-gray-900 px-8 py-4 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
-              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+            <div className="px-2 py-1">
+              <h1 className="text-5xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent font-inter">
                 Autonomy
               </h1>
             </div>
