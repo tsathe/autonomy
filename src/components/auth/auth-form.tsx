@@ -110,13 +110,34 @@ export default function AuthForm() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <Card className="w-full max-w-md">
-        <CardHeader>
-          <CardTitle>EPA Evaluation System</CardTitle>
-          <CardDescription>
-            {isSignUp ? 'Create your account' : 'Sign in to your account'}
-          </CardDescription>
-        </CardHeader>
+      <div className="w-full max-w-md space-y-8">
+        {/* Autonomy Branding */}
+        <div className="text-center space-y-4 animate-in fade-in duration-700">
+          <div className="flex items-center justify-center">
+            <div className="bg-gradient-to-r from-white via-gray-50 to-gray-100 text-gray-900 px-8 py-4 rounded-xl shadow-lg border border-gray-200 hover:shadow-xl transition-shadow duration-300">
+              <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-gray-900 to-gray-700 bg-clip-text text-transparent">
+                Autonomy
+              </h1>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <h2 className="text-xl font-semibold text-foreground">EPA Evaluation System</h2>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              Advancing surgical education through competency-based assessment
+            </p>
+          </div>
+        </div>
+        
+        {/* Auth Card */}
+        <Card className="w-full animate-in slide-in-from-bottom-4 duration-500 delay-200">
+          <CardHeader className="text-center">
+            <CardTitle className="text-lg">
+              {isSignUp ? 'Create Account' : 'Welcome Back'}
+            </CardTitle>
+            <CardDescription>
+              {isSignUp ? 'Join the surgical education platform' : 'Sign in to continue your surgical training'}
+            </CardDescription>
+          </CardHeader>
         <CardContent>
           <form onSubmit={isSignUp ? handleSignUp : handleSignIn}>
             <div className="grid gap-4">
@@ -226,6 +247,7 @@ export default function AuthForm() {
           </Button>
         </CardFooter>
       </Card>
+      </div>
     </div>
   )
 }
