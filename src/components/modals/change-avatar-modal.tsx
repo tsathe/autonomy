@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Badge } from '@/components/ui/badge'
 import { Upload, User, Users, Palette, Camera, CheckCircle } from 'lucide-react'
-import { cn } from '@/lib/utils'
+import { cn, getAvatarUrl } from '@/lib/utils'
 import { supabase } from '@/lib/supabase'
 import { toast } from 'sonner'
 
@@ -152,7 +152,7 @@ export function ChangeAvatarModal({ isOpen, onClose, currentUser, onAvatarChange
     }
   }
 
-  const currentAvatarUrl = `https://api.dicebear.com/7.x/initials/svg?seed=${currentUser?.first_name}${currentUser?.last_name}&backgroundColor=b6e3f4,c0aede,d1d4f9,ffd5dc,ffdfbf`
+  const currentAvatarUrl = getAvatarUrl(currentUser?.id, currentUser?.avatar_url)
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
