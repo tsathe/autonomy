@@ -205,16 +205,16 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
                     <div className="flex-1 text-left min-w-0">
                       <div className="font-medium truncate">
                         {currentUser.first_name} {currentUser.last_name}
-                        {currentUser.pgy_year && (
-                          <span className="ml-2 text-xs text-muted-foreground font-normal">
-                            PGY-{currentUser.pgy_year}
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-2">
                         <Badge className={cn("text-xs", getRoleColor(currentUser.role))}>
                           {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
                         </Badge>
+                        {currentUser.pgy_year && (
+                          <Badge variant="outline" className="text-xs">
+                            PGY-{currentUser.pgy_year}
+                          </Badge>
+                        )}
                       </div>
                     </div>
                   )}
@@ -232,12 +232,22 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {currentUser.first_name} {currentUser.last_name}
-                    </p>
+                    <div className="flex items-center gap-2">
+                      <p className="text-sm font-medium leading-none">
+                        {currentUser.first_name} {currentUser.last_name}
+                      </p>
+                      {currentUser.pgy_year && (
+                        <Badge variant="outline" className="text-xs">
+                          PGY-{currentUser.pgy_year}
+                        </Badge>
+                      )}
+                    </div>
                     <p className="text-xs leading-none text-muted-foreground">
                       {currentUser.email}
                     </p>
+                    <Badge className={cn("text-xs w-fit", getRoleColor(currentUser.role))}>
+                      {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
+                    </Badge>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
