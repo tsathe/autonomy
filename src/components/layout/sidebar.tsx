@@ -106,7 +106,10 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
               <h2 className="text-2xl font-bold bg-gradient-to-r from-gray-900 to-gray-600 dark:from-white dark:to-gray-400 bg-clip-text text-transparent font-inter">
                 Autonomy
               </h2>
-              <p className="text-sm text-muted-foreground">Resident Portal</p>
+              <p className="text-sm text-muted-foreground">
+                {currentUser?.role === 'faculty' ? 'Faculty Portal' : 
+                 currentUser?.role === 'admin' ? 'Admin Portal' : 'Resident Portal'}
+              </p>
             </div>
           ) : (
             <div className="flex items-center justify-center w-full">
