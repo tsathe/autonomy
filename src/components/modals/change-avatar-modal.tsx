@@ -85,9 +85,9 @@ export function ChangeAvatarModal({ isOpen, onClose, currentUser, onAvatarChange
     setIsUploading(true)
 
     try {
-      // Create unique filename
+      // Create unique filename with user folder structure
       const fileExt = file.name.split('.').pop()
-      const fileName = `${currentUser.id}-${Date.now()}.${fileExt}`
+      const fileName = `${currentUser.id}/${Date.now()}.${fileExt}`
 
       // Upload to Supabase Storage
       const { data, error } = await supabase.storage
@@ -107,9 +107,10 @@ export function ChangeAvatarModal({ isOpen, onClose, currentUser, onAvatarChange
       setSelectedAvatar('custom-upload')
       toast.success('Image uploaded successfully!')
 
-    } catch (error) {
+    } catch (error: any) {
       console.error('Upload error:', error)
-      toast.error('Failed to upload image')
+      const errorMessage = error?.message || 'Failed to upload image'
+      toast.error(`Upload failed: ${errorMessage}`)
     } finally {
       setIsUploading(false)
     }
