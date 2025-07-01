@@ -70,7 +70,7 @@ export function FeedSection({ evaluations, onViewEvaluation }: FeedSectionProps)
     <>
       {/* Header */}
       <div className="flex flex-col mb-4 gap-1">
-        <h2 className="text-2xl font-bold">Completed Evaluations</h2>
+        <h2 className="text-xl sm:text-2xl font-bold">Completed Evaluations</h2>
         <FilterBar
           dateFilter={dateFilter}
           setDateFilter={setDateFilter}
@@ -95,43 +95,43 @@ export function FeedSection({ evaluations, onViewEvaluation }: FeedSectionProps)
           className="border-b border-border last:border-b-0 hover:bg-muted/30 transition-colors duration-200 cursor-pointer"
           onClick={() => onViewEvaluation(evaluation)}
         >
-          <div className="p-6">
+          <div className="p-3 sm:p-4 md:p-6">
             {/* Header with overlapping avatars */}
-            <div className="flex items-start justify-between mb-4">
-              <div className="flex items-center space-x-3">
+            <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3 mb-4">
+              <div className="flex items-center space-x-3 min-w-0 flex-1">
                 {/* Overlapping Avatars */}
-                <div className="flex -space-x-2">
-                  <Avatar className="h-10 w-10 border-2 border-background relative z-10">
+                <div className="flex -space-x-2 flex-shrink-0">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-background relative z-10">
                     <AvatarImage 
                       src={getAvatarUrl(evaluation.resident?.id)} 
                       alt={`${evaluation.resident?.first_name} ${evaluation.resident?.last_name}`}
                     />
-                    <AvatarFallback className="text-sm">
+                    <AvatarFallback className="text-xs sm:text-sm">
                       {evaluation.resident?.first_name?.[0]}{evaluation.resident?.last_name?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <Avatar className="h-10 w-10 border-2 border-background relative z-0">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border-2 border-background relative z-0">
                     <AvatarImage 
                       src={getAvatarUrl(evaluation.faculty?.id)} 
                       alt={`${evaluation.faculty?.first_name} ${evaluation.faculty?.last_name}`}
                     />
-                    <AvatarFallback className="text-sm">
+                    <AvatarFallback className="text-xs sm:text-sm">
                       {evaluation.faculty?.first_name?.[0]}{evaluation.faculty?.last_name?.[0]}
                     </AvatarFallback>
                   </Avatar>
                 </div>
                 
-                <div className="min-w-0">
-                  <div className="flex items-center space-x-2">
-                    <span className="font-semibold text-foreground">
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
+                    <span className="font-semibold text-foreground text-sm sm:text-base truncate">
                       {evaluation.resident?.first_name} {evaluation.resident?.last_name}
                     </span>
-                    <span className="text-muted-foreground">•</span>
-                    <span className="text-muted-foreground">
+                    <span className="text-muted-foreground hidden sm:inline">•</span>
+                    <span className="text-muted-foreground text-sm truncate">
                       Dr. {evaluation.faculty?.last_name}
                     </span>
                   </div>
-                  <div className="text-sm text-muted-foreground mt-1">
+                  <div className="text-xs sm:text-sm text-muted-foreground mt-1">
                     {new Date(evaluation.created_at).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',
@@ -142,19 +142,21 @@ export function FeedSection({ evaluations, onViewEvaluation }: FeedSectionProps)
                 </div>
               </div>
 
-              {/* Badges on the right */}
-              <div className="flex items-center space-x-2 flex-shrink-0">
+              {/* Badges */}
+              <div className="flex flex-wrap gap-2 sm:flex-nowrap sm:items-center sm:space-x-2 sm:flex-shrink-0">
                 <Badge 
-                  className={`${getEntrustmentLevelColor(evaluation.faculty_entrustment_level || '')} flex items-center space-x-1`}
+                  className={`${getEntrustmentLevelColor(evaluation.faculty_entrustment_level || '')} flex items-center space-x-1 text-xs`}
                 >
                   <UserCheck className="h-3 w-3" />
-                  <span>{formatEntrustmentLevel(evaluation.faculty_entrustment_level || '')}</span>
+                  <span className="hidden sm:inline">{formatEntrustmentLevel(evaluation.faculty_entrustment_level || '')}</span>
+                  <span className="sm:hidden">{formatEntrustmentLevel(evaluation.faculty_entrustment_level || '').split(' ')[0]}</span>
                 </Badge>
                 <Badge 
-                  className={`${getComplexityLevelColor(evaluation.faculty_complexity || '')} flex items-center space-x-1`}
+                  className={`${getComplexityLevelColor(evaluation.faculty_complexity || '')} flex items-center space-x-1 text-xs`}
                 >
                   <Settings className="h-3 w-3" />
-                  <span>{formatComplexityLevel(evaluation.faculty_complexity || '')}</span>
+                  <span className="hidden sm:inline">{formatComplexityLevel(evaluation.faculty_complexity || '')}</span>
+                  <span className="sm:hidden">{formatComplexityLevel(evaluation.faculty_complexity || '').split(' ')[0]}</span>
                 </Badge>
               </div>
             </div>

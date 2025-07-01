@@ -41,6 +41,7 @@ interface SidebarProps {
 
 export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation }: SidebarProps) {
   const [isCollapsed, setIsCollapsed] = useState(false)
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
   const router = useRouter()
 
@@ -72,19 +73,31 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
 
   return (
     <>
+      {/* Mobile Menu Button */}
+      <button
+        onClick={() => setIsMobileOpen(true)}
+        className="fixed top-4 left-4 z-50 p-2 bg-background border border-border rounded-lg shadow-lg lg:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+
       {/* Mobile overlay */}
-      {!isCollapsed && (
+      {isMobileOpen && (
         <div 
-          className="fixed inset-0 bg-black/20 backdrop-blur-sm z-40 lg:hidden" 
-          onClick={() => setIsCollapsed(true)}
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40 lg:hidden" 
+          onClick={() => setIsMobileOpen(false)}
         />
       )}
       
       {/* Sidebar */}
       <div className={cn(
         "fixed left-0 top-0 z-50 h-screen bg-background border-r border-border transition-all duration-300 ease-in-out flex flex-col",
-        isCollapsed ? "w-16" : "w-64",
-        "lg:relative lg:translate-x-0"
+        // Desktop behavior
+        "lg:relative lg:translate-x-0",
+        // Mobile behavior
+        isMobileOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0",
+        // Width behavior
+        isCollapsed ? "w-16 lg:w-16" : "w-64 lg:w-64"
       )}>
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b border-border flex-shrink-0">
@@ -135,9 +148,12 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
               return (
                 <button
                   key={item.id}
-                  onClick={() => onSectionChange(item.id)}
+                  onClick={() => {
+                    onSectionChange(item.id)
+                    setIsMobileOpen(false) // Close mobile menu when item is selected
+                  }}
                   className={cn(
-                    "w-full flex items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
+                    "w-full flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors touch-manipulation",
                     isActive 
                       ? "bg-muted text-foreground" 
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50",

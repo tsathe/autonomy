@@ -62,7 +62,6 @@ function Progress({ value, className }: { value: number; className?: string }) {
 export function EvaluationView({ open, onOpenChange, evaluation }: EvaluationViewProps) {
   // Don't render anything if no evaluation data
   if (!evaluation) return null
-  if (!evaluation) return null
 
   // Fetch historical data for this EPA and resident combination
   const { data: historicalEvaluations = [] } = useQuery({
