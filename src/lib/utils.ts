@@ -96,7 +96,12 @@ export const exportToCSV = (data: any[], filename: string) => {
 }
 
 // Centralized avatar utility - ensures consistent avatars across the app
-export const getAvatarUrl = (userId?: string, style: string = 'avataaars') => {
+export const getAvatarUrl = (userId?: string, customUrl?: string, style: string = 'avataaars') => {
   if (!userId) return undefined
+  
+  // Use custom avatar URL if provided
+  if (customUrl) return customUrl
+  
+  // Fallback to generated avatar
   return `https://api.dicebear.com/7.x/${style}/svg?seed=${userId}&backgroundColor=transparent`
 }

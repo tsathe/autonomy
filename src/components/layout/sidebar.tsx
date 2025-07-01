@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuSeparator } from '@/components/ui/dropdown-menu'
 import { getCurrentUserProfile, supabase, type UserProfile } from '@/lib/supabase'
 import { cn, getAvatarUrl } from '@/lib/utils'
+import { ChangeAvatarModal } from '@/components/modals/change-avatar-modal'
 import { 
   Menu, 
   X, 
@@ -43,6 +44,7 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
   const [isCollapsed, setIsCollapsed] = useState(false)
   const [isMobileOpen, setIsMobileOpen] = useState(false)
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null)
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false)
   const router = useRouter()
 
   useEffect(() => {
@@ -60,6 +62,12 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
   const handleSignOut = async () => {
     await supabase.auth.signOut()
     router.push('/auth')
+  }
+
+  const handleAvatarChange = (newAvatarUrl: string) => {
+    if (currentUser) {
+      setCurrentUser({ ...currentUser, avatar_url: newAvatarUrl })
+    }
   }
 
   const getRoleColor = (role: string) => {
@@ -194,7 +202,7 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
                 )}>
                   <Avatar className="h-8 w-8">
                     <AvatarImage 
-                      src={getAvatarUrl(currentUser.id)} 
+                      src={getAvatarUrl(currentUser.id, currentUser.avatar_url)} 
                       alt={`${currentUser.first_name} ${currentUser.last_name}`}
                     />
                     <AvatarFallback className="text-xs">
@@ -224,34 +232,34 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
                 <div className="flex items-center gap-2 p-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage 
-                      src={getAvatarUrl(currentUser.id)} 
+                      src={getAvatarUrl(currentUser.id, currentUser.avatar_url)} 
                       alt={`${currentUser.first_name} ${currentUser.last_name}`}
                     />
                     <AvatarFallback>
                       {currentUser.first_name?.[0]}{currentUser.last_name?.[0]}
                     </AvatarFallback>
                   </Avatar>
-                  <div className="flex flex-col space-y-1">
+                  <div className="flex flex-col space-y-2">
+                    <p className="text-sm font-medium leading-none">
+                      {currentUser.first_name} {currentUser.last_name}
+                    </p>
+                    <p className="text-xs leading-none text-muted-foreground">
+                      {currentUser.email}
+                    </p>
                     <div className="flex items-center gap-2">
-                      <p className="text-sm font-medium leading-none">
-                        {currentUser.first_name} {currentUser.last_name}
-                      </p>
+                      <Badge className={cn("text-xs", getRoleColor(currentUser.role))}>
+                        {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
+                      </Badge>
                       {currentUser.pgy_year && (
                         <Badge variant="outline" className="text-xs">
                           PGY-{currentUser.pgy_year}
                         </Badge>
                       )}
                     </div>
-                    <p className="text-xs leading-none text-muted-foreground">
-                      {currentUser.email}
-                    </p>
-                    <Badge className={cn("text-xs w-fit", getRoleColor(currentUser.role))}>
-                      {currentUser.role.charAt(0).toUpperCase() + currentUser.role.slice(1)}
-                    </Badge>
                   </div>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setIsAvatarModalOpen(true)}>
                   <Camera className="h-4 w-4 mr-2" />
                   Change Avatar
                 </DropdownMenuItem>
@@ -269,6 +277,16 @@ export function Sidebar({ items, activeSection, onSectionChange, onNewEvaluation
           </div>
         )}
       </div>
+      
+      {/* Change Avatar Modal */}
+      {currentUser && (
+        <ChangeAvatarModal
+          isOpen={isAvatarModalOpen}
+          onClose={() => setIsAvatarModalOpen(false)}
+          currentUser={currentUser}
+          onAvatarChange={handleAvatarChange}
+        />
+      )}
     </>
   )
 }
