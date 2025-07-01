@@ -77,7 +77,7 @@ export const getCurrentUserProfile = async () => {
   if (!user) return null
 
   const { data, error } = await supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('*, institutions(*)')
     .eq('id', user.id)
     .single()
@@ -107,8 +107,8 @@ export const getEvaluations = async (filters?: {
     .from('evaluations')
     .select(`
       *,
-      resident:user_profiles!resident_id(id, first_name, last_name, pgy_year),
-      faculty:user_profiles!faculty_id(id, first_name, last_name),
+      resident:profiles!resident_id(id, first_name, last_name, pgy_year),
+      faculty:profiles!faculty_id(id, first_name, last_name),
       epa:epas(code, title)
     `)
     .order('created_at', { ascending: false })
@@ -154,7 +154,7 @@ export const updateEvaluation = async (id: string, updates: Partial<Evaluation>)
 // User helpers
 export const getUsersInInstitution = async (institutionId: string, role?: UserRole) => {
   let query = supabase
-    .from('user_profiles')
+    .from('profiles')
     .select('*')
     .eq('institution_id', institutionId)
     .order('last_name')
