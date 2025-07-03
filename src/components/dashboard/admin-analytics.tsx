@@ -7,6 +7,7 @@ import { formatEntrustmentLevel, formatComplexityLevel, formatDomain } from '@/l
 import { Download, Users, TrendingUp, Award } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
 import { CompetencyRadialChart } from '@/components/analytics/competency-radial-chart'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { getEPAs } from '@/lib/supabase'
 import { useQuery } from '@tanstack/react-query'
 import { format, subDays, isAfter } from 'date-fns'
@@ -123,10 +124,10 @@ export function AdminAnalytics({ evaluations, allUsers, onExport }: AdminAnalyti
   const { data: epas = [] } = useQuery({
     queryKey: ['epas'],
     queryFn: getEPAs
-  }) as { data: any[] }
+  }) as any
 
-  // Group residents by PGY level
-  const pgyLevels = Array.from(new Set(residents.map(r => r.pgy_year).filter(Boolean))).sort()
+  // PGY Levels 1-5
+  const pgyLevels = [1, 2, 3, 4, 5]
 
   // Helper to get evaluations for a given PGY level
   const getPgyEvaluations = (pgy: number) => {
@@ -256,23 +257,30 @@ export function AdminAnalytics({ evaluations, allUsers, onExport }: AdminAnalyti
         </Card>
       </div>
 
-      {/* Wheel of Autonomy by PGY */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {pgyLevels.map((pgy: number) => (
-          <Card key={pgy}>
-            <CardHeader>
-              <CardTitle>Wheel of Autonomy – PGY-{pgy}</CardTitle>
-              <CardDescription>Entrustment distribution for PGY-{pgy} residents</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CompetencyRadialChart
-                evaluations={getPgyEvaluations(pgy)}
-                epas={epas}
-              />
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      {/* Wheel of Autonomy – switchable by PGY */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Wheel of Autonomy by PGY Level</CardTitle>
+          <CardDescription>Select a PGY to view aggregate autonomy across residents in that cohort.</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Tabs defaultValue="1" className="w-full">
+            <TabsList className="mb-4">
+              {pgyLevels.map((p) => (
+                <TabsTrigger key={p} value={String(p)}>PGY-{p}</TabsTrigger>
+              ))}
+            </TabsList>
+            {pgyLevels.map((p) => (
+              <TabsContent key={p} value={String(p)} className="w-full">
+                <CompetencyRadialChart
+                  evaluations={getPgyEvaluations(p)}
+                  epas={epas}
+                />
+              </TabsContent>
+            ))}
+          </Tabs>
+        </CardContent>
+      </Card>
 
       {/* Resident Performance */}
       <Card>
