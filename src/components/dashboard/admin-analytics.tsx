@@ -6,6 +6,9 @@ import { Badge } from '@/components/ui/badge'
 import { formatEntrustmentLevel, formatComplexityLevel, formatDomain } from '@/lib/utils'
 import { Download, Users, TrendingUp, Award } from 'lucide-react'
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, BarChart, Bar, PieChart, Pie, Cell } from 'recharts'
+import { CompetencyRadialChart } from '@/components/analytics/competency-radial-chart'
+import { getEPAs } from '@/lib/supabase'
+import { useQuery } from '@tanstack/react-query'
 import { format, subDays, isAfter } from 'date-fns'
 
 interface AdminAnalyticsProps {
@@ -115,6 +118,21 @@ export function AdminAnalytics({ evaluations, allUsers, onExport }: AdminAnalyti
   const uniqueFaculty = new Set(completedEvaluations.map(e => e.faculty_id)).size
 
   const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8']
+
+  // Fetch EPAs once for radial chart
+  const { data: epas = [] } = useQuery({
+    queryKey: ['epas'],
+    queryFn: getEPAs
+  }) as { data: any[] }
+
+  // Group residents by PGY level
+  const pgyLevels = Array.from(new Set(residents.map(r => r.pgy_year).filter(Boolean))).sort()
+
+  // Helper to get evaluations for a given PGY level
+  const getPgyEvaluations = (pgy: number) => {
+    const residentIds = residents.filter(r => r.pgy_year === pgy).map(r => r.id)
+    return completedEvaluations.filter(e => residentIds.includes(e.resident_id))
+  }
 
   return (
     <div className="space-y-6">
@@ -236,6 +254,24 @@ export function AdminAnalytics({ evaluations, allUsers, onExport }: AdminAnalyti
             </ResponsiveContainer>
           </CardContent>
         </Card>
+      </div>
+
+      {/* Wheel of Autonomy by PGY */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {pgyLevels.map((pgy: number) => (
+          <Card key={pgy}>
+            <CardHeader>
+              <CardTitle>Wheel of Autonomy – PGY-{pgy}</CardTitle>
+              <CardDescription>Entrustment distribution for PGY-{pgy} residents</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CompetencyRadialChart
+                evaluations={getPgyEvaluations(pgy)}
+                epas={epas}
+              />
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       {/* Resident Performance */}
