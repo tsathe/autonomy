@@ -40,6 +40,7 @@ export function AdminDashboard() {
   })
 
   // Categorize evaluations
+  console.log('AdminDashboard allEvaluations', allEvaluations)
   const completedEvaluations = allEvaluations.filter(evaluation => evaluation.is_completed)
   const pendingEvaluations = allEvaluations.filter(evaluation => !evaluation.is_completed)
 
