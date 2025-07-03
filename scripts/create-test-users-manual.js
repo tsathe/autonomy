@@ -17,6 +17,14 @@ async function createTestUsersManually() {
 
   const users = [
     {
+      email: 'admin@autonomy.test',
+      password: 'TestAdmin123!',
+      role: 'admin',
+      first_name: 'Alex',
+      last_name: 'Thompson',
+      department: 'Administration'
+    },
+    {
       email: 'faculty@autonomy.test',
       password: 'TestFaculty123!',
       role: 'faculty',
@@ -83,6 +91,7 @@ async function createTestUsersManually() {
 
   console.log('\n🎯 MANUAL USER CREATION COMPLETE!');
   console.log('\n📧 Test Credentials:');
+  console.log('Admin: admin@autonomy.test / TestAdmin123!');
   console.log('Faculty: faculty@autonomy.test / TestFaculty123!');
   console.log('Resident: resident@autonomy.test / TestResident123!');
   console.log('\n🌐 Test at: https://autonomy-8egax9akx-tsathes-projects.vercel.app');

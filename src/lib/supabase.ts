@@ -102,6 +102,7 @@ export const getEPAs = async () => {
 export const getEvaluations = async (filters?: {
   resident_id?: string
   faculty_id?: string
+  institution_id?: string
   is_completed?: boolean
 }) => {
   let query = supabase
@@ -119,6 +120,9 @@ export const getEvaluations = async (filters?: {
   }
   if (filters?.faculty_id) {
     query = query.eq('faculty_id', filters.faculty_id)
+  }
+  if (filters?.institution_id) {
+    query = query.eq('institution_id', filters.institution_id)
   }
   if (filters?.is_completed !== undefined) {
     query = query.eq('is_completed', filters.is_completed)
